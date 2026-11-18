@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#090b12">
+  <meta name="description" content="CARDVAULT — your Pokémon card collection and scanner.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+  <title>CARDVAULT</title>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="CARDVAULT home"><span class="brand-mark">C</span><span>CARD<span>VAULT</span></span></a>
+      <div class="top-actions"><span id="storageState" class="sync-state">● SAVED ON THIS DEVICE</span><button id="settingsBtn" class="icon-btn" aria-label="Settings">⚙</button></div>
+    </header>
+
+    <main>
+      <section id="homeView" class="view active">
+        <div class="hero">
+          <div><p class="eyebrow">YOUR COLLECTION, SECURED</p><h1>Every card.<br><em>One vault.</em></h1><p class="sub">Scan, identify and keep track of your Pokémon cards.</p></div>
+          <div class="hero-orb"><span>✦</span></div>
+        </div>
+        <div class="stats-grid">
+          <article class="stat"><span class="stat-label">CARDS SAVED</span><strong id="totalCards">0</strong></article>
+          <article class="stat"><span class="stat-label">COLLECTION VALUE*</span><strong id="totalValue">€0.00</strong><small>*Based on available raw EUR prices</small></article>
+        </div>
+        <div class="section-heading"><div><p class="eyebrow">QUICK ACTION</p><h2>What’s the move?</h2></div></div>
+        <div class="action-grid">
+          <button class="action-card primary" data-go="scanView"><span class="action-icon">⌗</span><b>Scan a card</b><small>Use your camera</small><span class="arrow">↗</span></button>
+          <button class="action-card" data-go="searchView"><span class="action-icon">⌕</span><b>Find a card</b><small>Search the card database</small><span class="arrow">↗</span></button>
+        </div>
+        <div class="section-heading collection-head"><div><p class="eyebrow">RECENTLY ADDED</p><h2>Your collection</h2></div><button class="text-btn" data-go="collectionView">VIEW ALL ↗</button></div>
+        <div id="recentCards" class="card-grid"></div>
+        <p class="fineprint">Prices are estimates from available public card data, not guaranteed sale prices. Graded prices are shown only when a supported data source is connected.</p>
+      </section>
+
+      <section id="scanView" class="view">
+        <div class="page-title"><p class="eyebrow">CAMERA SCANNER</p><h1>Scan a <em>card.</em></h1><p class="sub">Place one card inside the frame. Avoid glare and keep the card flat.</p></div>
+        <div class="camera-wrap">
+          <video id="camera" autoplay playsinline muted></video>
+          <div id="cameraPlaceholder" class="camera-placeholder"><span>⌗</span><b>Camera preview</b><small>Start the camera to begin scanning</small></div>
+          <div class="scan-frame"><i></i><i></i><i></i><i></i><div class="scan-line"></div></div>
+          <div class="camera-badge" id="cameraStatus">CAMERA OFF</div>
+        </div>
+        <div class="camera-controls"><button id="startCamera" class="btn secondary">START CAMERA</button><button id="captureBtn" class="btn primary" disabled>CAPTURE CARD</button></div>
+        <canvas id="captureCanvas" hidden></canvas>
+        <div id="scanMessage" class="message" role="status">Camera access requires this site to be opened over HTTPS (or localhost).</div>
+        <div id="scanResult" class="scan-result hidden"></div>
+        <div class="manual-divider"><span>OR SEARCH MANUALLY</span></div>
+        <button class="btn full secondary" data-go="searchView">SEARCH THE CARD DATABASE</button>
+      </section>
+
+      <section id="searchView" class="view">
+        <div class="page-title"><p class="eyebrow">CARD DATABASE</p><h1>Find your <em>card.</em></h1><p class="sub">Search by Pokémon name, card number or set.</p></div>
+        <form id="searchForm" class="searchbar"><span>⌕</span><input id="searchInput" autocomplete="off" placeholder="e.g. Charizard, Pikachu..." required><button type="submit">SEARCH</button></form>
+        <div id="searchMessage" class="message">Search results come from the Pokémon TCG API. An internet connection is required.</div>
+        <div id="searchResults" class="result-grid"></div>
+      </section>
+
+      <section id="collectionView" class="view">
+        <div class="page-title"><p class="eyebrow">YOUR PERSONAL VAULT</p><h1>The <em>collection.</em></h1><p class="sub">Saved locally on this device, even after you close the app.</p></div>
+        <div class="collection-tools"><input id="collectionFilter" placeholder="Filter your collection…"><button id="exportBtn" class="btn secondary compact">EXPORT BACKUP</button></div>
+        <div id="collectionCards" class="card-grid"></div>
+        <div id="emptyCollection" class="empty-state"><span>◇</span><b>Your vault is waiting.</b><small>Scan or search for a card, then add it to your collection.</small><button class="btn primary" data-go="scanView">SCAN YOUR FIRST CARD</button></div>
+        <div class="backup-note">Tip: export a backup occasionally. Browser data can be lost if you clear site data or remove the app.</div>
+      </section>
+
+      <section id="settingsView" class="view">
+        <div class="page-title"><p class="eyebrow">PREFERENCES</p><h1>Vault <em>settings.</em></h1></div>
+        <article class="settings-card"><h3>Data storage</h3><p>CARDVAULT saves your collection in this browser using IndexedDB. Closing the app does not delete it. No account is required.</p><div class="setting-row"><span>Persistent storage permission</span><b id="persistStatus">Checking…</b></div><button id="persistBtn" class="btn secondary full">REQUEST PERSISTENT STORAGE</button></article>
+        <article class="settings-card"><h3>Backup & restore</h3><p>Export a JSON backup to your device. You can restore it later on this or another device.</p><button id="settingsExport" class="btn secondary full">EXPORT COLLECTION BACKUP</button><label class="btn secondary full file-label">IMPORT BACKUP<input id="importFile" type="file" accept="application/json,.json" hidden></label></article>
+        <article class="settings-card"><h3>Prices & grading</h3><p>Raw EUR and USD estimates are shown when available from the Pokémon TCG API. PSA 10, BGS 10 and CGC 10 values need a licensed grading-price data provider and are not invented or estimated here.</p></article>
+        <article class="settings-card"><h3>Privacy</h3><p>Your saved collection stays in this browser on this device. Searches and card lookups contact the Pokémon TCG API. There is no Gmail sign-in or cloud sync in this version.</p></article>
+        <button id="clearBtn" class="danger-btn">DELETE ALL LOCAL COLLECTION DATA</button>
+      </section>
+    </main>
+
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-go="homeView"><span>⌂</span>HOME</button>
+      <button class="nav-item" data-go="scanView"><span>⌗</span>SCAN</button>
+      <button class="nav-item" data-go="collectionView"><span>▤</span>VAULT</button>
+      <button class="nav-item" data-go="searchView"><span>⌕</span>SEARCH</button>
+    </nav>
+  </div>
+  <div id="toast" class="toast"></div>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
